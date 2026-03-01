@@ -6,8 +6,12 @@ import Markdown from 'react-markdown';
 // Initialize lazily to prevent crashes if env var is missing during build/deploy
 let ai: GoogleGenAI | null = null;
 try {
-  if (process.env.GEMINI_API_KEY) {
-    ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
+  // CHANGED: Use import.meta.env instead of process.env
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (apiKey) {
+    ai = new GoogleGenAI({ apiKey: apiKey });
+  } else {
+    console.warn("VITE_GEMINI_API_KEY is missing from environment variables.");
   }
 } catch (e) {
   console.warn("Gemini API key not found or invalid.");
@@ -112,31 +116,3 @@ export default function AIBot() {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input Area */}
-          <div className="p-4 bg-black/60 border-t border-white/10">
-            <form onSubmit={handleSend} className="flex gap-4">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about cybersecurity laws, compliance, or threats..."
-                className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00f2ff] focus:shadow-[0_0_15px_rgba(0,242,255,0.3)] transition-all font-mono text-sm"
-                disabled={isLoading}
-              />
-              <button
-                type="submit"
-                disabled={isLoading || !input.trim()}
-                className="glow-border px-6 py-3 bg-[#7a00ff]/20 text-white rounded-lg font-mono tracking-widest hover:bg-[#7a00ff]/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                <Send size={20} />
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}

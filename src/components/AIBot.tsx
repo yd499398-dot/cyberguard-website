@@ -1,11 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { Send, Bot, User, ShieldAlert, Loader2 } from 'lucide-react';
 import Markdown from 'react-markdown';
 
-// Initialize with the Vite environment variable
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+// Initialize lazily to prevent crashes if env var is missing during build/deploy
+let ai: GoogleGenAI | null = null;
+try {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (apiKey) {
+    ai = new GoogleGenAI({ apiKey: apiKey });
+  } else {
+    console.warn("VITE_GEMINI_API_KEY is missing from environment variables.");
+  }
+} catch (e) {
+  console.warn("Gemini API key not found or invalid.");
+}
 
 export default function AIBot() {
   const [messages, setMessages] = useState<{role: 'user' | 'model', text: string}[]>([
@@ -17,13 +26,13 @@ export default function AIBot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!genAI) return;
+    if (!ai) return;
     try {
-      chatRef.current = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
-        systemInstruction: "You are an elite cybersecurity AI assistant named CyberGuard Oracle. You provide expert advice on cybersecurity laws, compliance, threat mitigation, and hacking prevention. Be professional, slightly futuristic, and highly informative. Format your responses using markdown.",
-      }).startChat({
-        history: [],
+      chatRef.current = ai.chats.create({
+        model: 'gemini-3-flash-preview',
+        config: {
+          systemInstruction: 'You are an elite cybersecurity AI assistant named CyberGuard Oracle. You provide expert advice on cybersecurity laws, compliance, threat mitigation, and hacking prevention. Be professional, slightly futuristic, and highly informative. Format your responses using markdown.',
+        }
       });
     } catch (e) {
       console.error("Failed to initialize AI chat:", e);
@@ -44,18 +53,19 @@ export default function AIBot() {
     setIsLoading(true);
 
     if (!chatRef.current) {
-      setMessages(prev => [...prev, { role: 'model', text: 'ERROR: AI core offline. API key missing or invalid.' }]);
-      setIsLoading(false);
+      setTimeout(() => {
+        setMessages(prev => [...prev, { role: 'model', text: 'ERROR: AI core offline. API key missing or invalid.' }]);
+        setIsLoading(false);
+      }, 1000);
       return;
     }
 
     try {
-      const result = await chatRef.current.sendMessage(userMsg);
-      const response = await result.response;
-      setMessages(prev => [...prev, { role: 'model', text: response.text() }]);
+      const response = await chatRef.current.sendMessage({ message: userMsg });
+      setMessages(prev => [...prev, { role: 'model', text: response.text }]);
     } catch (error) {
       console.error(error);
-      setMessages(prev => [...prev, { role: 'model', text: 'ERROR: Connection to AI core severed. Please check your API key and connection.' }]);
+      setMessages(prev => [...prev, { role: 'model', text: 'ERROR: Connection to AI core severed. Please try again.' }]);
     } finally {
       setIsLoading(false);
     }
@@ -73,6 +83,7 @@ export default function AIBot() {
         </div>
 
         <div className="flex-1 glass-card rounded-xl border-[#7a00ff]/30 flex flex-col overflow-hidden relative shadow-[0_0_30px_rgba(122,0,255,0.15)]">
+          {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -84,7 +95,7 @@ export default function AIBot() {
                     {msg.role === 'user' ? (
                       <p className="text-sm font-mono">{msg.text}</p>
                     ) : (
-                      <div className="markdown-body text-sm text-gray-300 prose prose-invert max-w-none prose-p:leading-relaxed">
+                      <div className="markdown-body text-sm text-gray-300 prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10">
                         <Markdown>{msg.text}</Markdown>
                       </div>
                     )}
@@ -98,7 +109,7 @@ export default function AIBot() {
                   <div className="w-10 h-10 rounded-full bg-[#7a00ff]/20 text-[#7a00ff] flex items-center justify-center shrink-0">
                     <Loader2 size={20} className="animate-spin" />
                   </div>
-                  <div className="p-4 rounded-xl bg-black/50 border border-white/10">
+                  <div className="p-4 rounded-xl bg-black/50 border border-white/10 flex items-center">
                     <span className="text-sm font-mono text-gray-400 animate-pulse">Processing query...</span>
                   </div>
                 </div>
@@ -107,20 +118,21 @@ export default function AIBot() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Input Area */}
           <div className="p-4 bg-black/60 border-t border-white/10">
             <form onSubmit={handleSend} className="flex gap-4">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about cybersecurity laws..."
-                className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00f2ff] font-mono text-sm"
+                placeholder="Ask about cybersecurity laws, compliance, or threats..."
+                className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00f2ff] focus:shadow-[0_0_15px_rgba(0,242,255,0.3)] transition-all font-mono text-sm"
                 disabled={isLoading}
               />
               <button
                 type="submit"
                 disabled={isLoading || !input.trim()}
-                className="px-6 py-3 bg-[#7a00ff]/20 text-white rounded-lg hover:bg-[#7a00ff]/40 transition-all flex items-center justify-center"
+                className="glow-border px-6 py-3 bg-[#7a00ff]/20 text-white rounded-lg font-mono tracking-widest hover:bg-[#7a00ff]/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 <Send size={20} />
               </button>

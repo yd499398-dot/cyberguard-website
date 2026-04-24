@@ -26,15 +26,15 @@ export default function HeroSection() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mountRef.current.appendChild(renderer.domElement);
 
-    // OrbitControls
+    // OrbitControls — auto-rotate only, no manual interaction
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.enableZoom = true;
-    controls.maxDistance = 10;
-    controls.minDistance = 1.5;
-    // Disable pan to keep it centered
+    controls.enableZoom = false;   // ← don't hijack scroll
+    controls.enableRotate = false; // ← user can't drag-rotate
     controls.enablePan = false;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.6;
 
     // Particles Globe
     const geometry = new THREE.BufferGeometry();
@@ -324,8 +324,8 @@ export default function HeroSection() {
 
   return (
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
-      {/* 3D Canvas Container - Must have pointer events to allow OrbitControls and Raycaster */}
-      <div ref={mountRef} className="absolute top-0 left-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
+      {/* 3D Canvas — pointer-events-none so page scroll & drag aren't blocked */}
+      <div ref={mountRef} className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none"></div>
       
       {/* Main Text UI - Pointer events none so it doesn't block 3D interaction, but children have auto */}
       <div className={`container mx-auto px-6 relative z-10 text-center pointer-events-none transition-opacity duration-500 ${activeNode ? 'opacity-0' : 'opacity-100'}`} ref={textRef}>
@@ -341,7 +341,7 @@ export default function HeroSection() {
         </h1>
         <p className="text-gray-400 max-w-2xl mx-auto mb-10 text-lg">
           Advanced threat detection, AI-powered monitoring, and impenetrable defense systems for the modern enterprise.
-          <br/><span className="text-[#00f2ff] text-sm mt-4 block animate-pulse">Drag to rotate • Scroll to zoom • Click nodes to inspect</span>
+          <br/><span className="text-[#00f2ff] text-sm mt-4 block animate-pulse">Click nodes to inspect the network</span>
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pointer-events-auto ui-layer">

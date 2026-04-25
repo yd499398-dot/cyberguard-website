@@ -15,7 +15,7 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-[#0a0a0f]/80 backdrop-blur-md border-b border-[#00f2ff]/20 py-4' : 'bg-transparent py-6'}`}>
-      <div className="container mx-auto px-6 flex justify-between items-center">
+      <div className="container mx-auto px-6 flex justify-between items-center relative">
         <Link 
           to="/"
           className="flex items-center space-x-2 text-[#00f2ff] cursor-pointer"
@@ -24,7 +24,7 @@ export default function Navbar() {
           <span className="text-2xl font-bold tracking-wider font-mono">CYBER<span className="text-[#7a00ff]">GUARD</span></span>
         </Link>
         
-        <div className="hidden md:flex space-x-8 font-mono text-sm tracking-widest">
+        <div className="hidden md:flex space-x-8 font-mono text-sm tracking-widest absolute left-1/2 -translate-x-1/2">
           <Link 
             to="/" 
             className={`hover:text-[#00f2ff] transition-colors ${activeTab === '/' ? 'text-[#00f2ff] border-b-2 border-[#00f2ff] pb-1' : 'text-gray-300'}`}

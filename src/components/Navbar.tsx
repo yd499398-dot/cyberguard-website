@@ -4,7 +4,6 @@ import { Link, useLocation } from 'react-router-dom';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
   const location = useLocation();
   const activeTab = location.pathname;
 

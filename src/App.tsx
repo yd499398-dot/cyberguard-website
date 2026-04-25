@@ -20,7 +20,6 @@ import Footer from './components/Footer';
 import AIBot from './components/AIBot';
 import ScannerTab from './components/ScannerTab';
 import ResourcesTab from './components/ResourcesTab';
-import LoginTab from './components/LoginTab';
 import SimulationTab from './components/SimulationTab';
 
 export default function App() {
@@ -48,7 +47,6 @@ export default function App() {
             <Route path="/scanner" element={<ScannerTab />} />
             <Route path="/ai" element={<AIBot />} />
             <Route path="/resources" element={<ResourcesTab />} />
-            <Route path="/login" element={<LoginTab />} />
             <Route path="/simulation" element={<SimulationTab />} />
           </Routes>
         </main>

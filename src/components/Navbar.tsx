@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, User } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function Navbar() {

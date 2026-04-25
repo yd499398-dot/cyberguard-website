@@ -7,37 +7,10 @@ export default function Navbar() {
   const location = useLocation();
   const activeTab = location.pathname;
 
-  const checkAuth = () => {
-    const token = localStorage.getItem('cyberguard_token');
-    const userStr = localStorage.getItem('cyberguard_user');
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setUserName(user.firstName || 'Operator');
-      } catch (e) {
-        setUserName(null);
-      }
-    } else {
-      setUserName(null);
-    }
-  };
-
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
-    
-    // Check auth on mount
-    checkAuth();
-    
-    // Listen for custom auth change event
-    window.addEventListener('auth-change', checkAuth);
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('auth-change', checkAuth);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
@@ -69,22 +42,6 @@ export default function Navbar() {
             className={`hover:text-[#00f2ff] transition-colors ${activeTab === '/resources' ? 'text-[#00f2ff] border-b-2 border-[#00f2ff] pb-1' : 'text-gray-300'}`}
           >RESOURCES</Link>
         </div>
-
-        <Link 
-          to="/login"
-          className={`glow-border px-6 py-2 rounded font-mono text-sm tracking-widest transition-all flex items-center gap-2 ${activeTab === '/login' ? 'bg-[#00f2ff]/30 text-[#00f2ff] border-[#00f2ff]' : 'bg-[#7a00ff]/20 text-white hover:bg-[#7a00ff]/40'}`}
-        >
-          {userName ? (
-            <>
-              <div className="w-5 h-5 rounded-full bg-[#00f2ff] text-black flex items-center justify-center font-bold text-xs">
-                {userName.charAt(0).toUpperCase()}
-              </div>
-              <span className="text-[#00f2ff] font-bold">{userName.toUpperCase()}</span>
-            </>
-          ) : (
-            'LOGIN'
-          )}
-        </Link>
       </div>
     </nav>
   );

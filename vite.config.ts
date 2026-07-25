@@ -1,13 +1,8 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-export default defineConfig(() => {
-  // Vercel automatically sets this environment variable during deployment
-  const isVercel = process.env.VERCEL === '1';
-
-  return {
-    plugins: [react()],
-    // Dynamically set the base path based on the hosting platform
-    base: isVercel ? '/' : '/cyberguard-website/',
-  };
-});
+export default defineConfig({
+  plugins: [react()],
+  // Automatically serve '/' for Vercel, and '/cyberguard-website/' for GitHub Pages
+  base: process.env.VERCEL ? '/' : '/cyberguard-website/',
+})

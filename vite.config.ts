@@ -1,13 +1,13 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-export default defineConfig(({ mode }) => {
-  // Check if we are running in Vercel's build environment
-  const isVercel = process.env.VERCEL;
+export default defineConfig(() => {
+  // Vercel automatically sets this environment variable during deployment
+  const isVercel = process.env.VERCEL === '1';
 
   return {
     plugins: [react()],
-    // If Vercel, serve from root. Otherwise, serve from the GitHub repo path.
+    // Dynamically set the base path based on the hosting platform
     base: isVercel ? '/' : '/cyberguard-website/',
-  }
-})
+  };
+});
